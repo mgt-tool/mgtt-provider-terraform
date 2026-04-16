@@ -1,0 +1,89 @@
+# A three-layer model: Terraform (IaC) ↔ AWS (live infra) ↔ Kubernetes (app).
+# Each layer answers a question the layer to its right cannot produce on its
+# own. When something breaks, `mgtt plan` walks the dependency graph and
+# eliminates healthy branches until it identifies the root cause.
+#
+# Usage:
+#   export MGTT_MODEL=examples/payments-api.model.yaml
+#   mgtt plan --component ingress
+#
+# Prerequisite providers: mgtt-provider-{terraform,aws,kubernetes}.
+
+meta:
+  name: payments-api
+  version: "1.2"
+  providers:
+    - terraform
+    - kubernetes
+    - aws
+  vars:
+    namespace: production
+    tf_workdir: ./infrastructure
+    tf_workspace: prod
+
+components:
+  # ── IaC layer ────────────────────────────────────────────────────────────
+  # Is our source-of-truth even healthy?
+  tf_state:
+    type: terraform.state
+    vars:
+      workdir: "{tf_workdir}"
+      workspace: "{tf_workspace}"
+
+  # Each critical cloud resource, pointed at its Terraform address via the
+  # `address` variable. The component key (tf_rds, etc.) is a readable
+  # logical name used inside the model graph; `address` is what the
+  # provider probe actually looks up in `terraform state list`.
+  tf_rds:
+    type: terraform.resource
+    vars:
+      workdir: "{tf_workdir}"
+      workspace: "{tf_workspace}"
+      address: aws_db_instance.main
+    depends_on: [tf_state]
+
+  tf_redis:
+    type: terraform.resource
+    vars:
+      workdir: "{tf_workdir}"
+      workspace: "{tf_workspace}"
+      address: aws_elasticache_cluster.sessions
+    depends_on: [tf_state]
+
+  tf_eks:
+    type: terraform.resource
+    vars:
+      workdir: "{tf_workdir}"
+      workspace: "{tf_workspace}"
+      address: aws_eks_cluster.main
+    depends_on: [tf_state]
+
+  # ── Live infra layer ─────────────────────────────────────────────────────
+  # Observed directly via the aws provider. depends_on the TF resource
+  # because "if IaC doesn't know about it, the reading doesn't matter."
+  rds_live:
+    type: aws.rds_instance
+    vars:
+      identifier: payments-prod
+    depends_on: [tf_rds]
+
+  # ── App layer ────────────────────────────────────────────────────────────
+  # K8s workloads running on the cluster TF provisioned.
+  api:
+    type: kubernetes.deployment
+    vars:
+      name: payments-api
+    depends_on: [rds_live, tf_redis, tf_eks]
+
+  api_service:
+    type: kubernetes.service
+    vars:
+      name: payments-api
+    depends_on: [api]
+
+  ingress:
+    type: kubernetes.ingress
+    vars:
+      name: payments
+    entry_point: true
+    depends_on: [api_service]

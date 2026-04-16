@@ -1,0 +1,59 @@
+facts:
+  exists_in_state:
+    type: mgtt.bool
+    ttl: 30s
+    description: "true when {name} appears in `terraform state list`"
+    probe:
+      cmd: "cd {workdir} && {tf_bin} state list | grep -Fxq '{name}' && echo true || echo false"
+      parse: bool
+      cost: low
+  drifted:
+    type: mgtt.bool
+    ttl: 120s
+    description: "true when `terraform plan` would change this resource (config ≠ reality)"
+    probe:
+      # -detailed-exitcode: 0 = no changes, 2 = changes, 1 = error.
+      # We scope the plan to just this resource to keep the operation
+      # cheap even on large states.
+      cmd: "cd {workdir} && {tf_bin} plan -detailed-exitcode -target='{name}' -lock=false >/dev/null 2>&1; [ $? -eq 2 ] && echo true || echo false"
+      parse: bool
+      cost: high
+  last_applied_age:
+    type: mgtt.int
+    ttl: 60s
+    description: "seconds since the state file was last modified (local backend only — 0 for remote)"
+    probe:
+      cmd: "cd {workdir} && stat -c %Y terraform.tfstate 2>/dev/null | awk -v now=$(date +%s) '{ print now - $1 }' || echo 0"
+      parse: int
+      cost: low
+  dependents_count:
+    type: mgtt.int
+    ttl: 120s
+    description: "number of other state resources that reference this address"
+    probe:
+      cmd: "cd {workdir} && {tf_bin} show -json | grep -o '\"{name}\"' | wc -l"
+      parse: int
+      cost: medium
+
+healthy:
+  - exists_in_state == true
+  - drifted == false
+
+states:
+  missing:
+    when: "exists_in_state == false"
+    description: resource is not in the terraform state (never created, or removed manually)
+  drifted:
+    when: "drifted == true"
+    description: live infrastructure has diverged from the terraform config
+  live:
+    when: "exists_in_state == true & drifted == false"
+    description: resource is tracked and in sync
+
+default_active_state: live
+
+failure_modes:
+  missing:
+    can_cause: [upstream_failure, connection_refused, dns_failure]
+  drifted:
+    can_cause: [upstream_failure, 5xx_errors, config_mismatch]
