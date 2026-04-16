@@ -13,9 +13,9 @@ meta:
   name: payments-api
   version: "1.2"
   providers:
-    - terraform
-    - kubernetes
-    - aws
+    - mgt-tool/terraform
+    - mgt-tool/kubernetes
+    - mgt-tool/aws
   vars:
     namespace: production
     tf_workdir: ./infrastructure
