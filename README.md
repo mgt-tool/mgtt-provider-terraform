@@ -6,23 +6,25 @@ Reason across the **IaC / live-infra boundary**: mgtt already probes running com
 
 ## Why this matters
 
-Most observability tools look at the live side and show you `rds_main.available == false`. That's the *symptom*, and it sends you down a rabbit hole.
+Most observability tools look at the live side and show you `aws_rds.available == false`. That's the *symptom*, and it sends you down a rabbit hole.
 
 With this provider in the model, mgtt can tell you the real story:
 
 ```
--> probe rds_main.available          ✗ false
+-> probe aws_rds.available           ✗ false
 -> probe tf_rds.exists_in_state      ✓ true
 -> probe tf_rds.drifted              ✗ true    ← config and reality disagree
 -> probe tf_state.last_applied_age     = 17 days
    root cause: tf_rds
 
-   rds_main is in the state, but terraform plan would change it;
+   RDS is in the terraform state, but `terraform plan` would change it;
    last apply was 17 days ago. Someone changed RDS parameters out-of-band
    and the drift explains the outage.
 ```
 
 Without the IaC layer, you'd waste an hour poking at AWS. With it, the root cause points you at `terraform apply` — or at whoever bypassed it.
+
+The two components (`tf_rds` and `aws_rds`) describe the *same real-world database* from two different provider perspectives: Terraform's view ("is it in state, is it drifted?") and AWS's view ("is it live, is it reachable?"). Declaring both lets the engine reason across the boundary. See the naming convention discussion in the example below.
 
 **The three failure classes this catches that live-only probing can't:**
 
