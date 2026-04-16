@@ -59,13 +59,15 @@ components:
     depends_on: [tf_state]
 
   # ── Live infra layer ─────────────────────────────────────────────────────
-  # Observed directly via the aws provider. depends_on the TF resource
-  # because "if IaC doesn't know about it, the reading doesn't matter."
-  rds_live:
+  # Same real-world resources as the tf_* components above, observed via
+  # the aws provider instead of via terraform state. Prefix `aws_` makes
+  # the observation boundary explicit — tf_rds and aws_rds describe the
+  # same RDS instance from two different provider perspectives.
+  aws_rds:
     type: aws.rds_instance
     vars:
       identifier: payments-prod
-    depends_on: [tf_rds]
+    depends_on: [tf_rds]  # ← if TF doesn't know about it, observing live is moot
 
   # ── App layer ────────────────────────────────────────────────────────────
   # K8s workloads running on the cluster TF provisioned.
@@ -73,7 +75,7 @@ components:
     type: kubernetes.deployment
     vars:
       name: payments-api
-    depends_on: [rds_live, tf_redis, tf_eks]
+    depends_on: [aws_rds, tf_redis, tf_eks]
 
   api_service:
     type: kubernetes.service
