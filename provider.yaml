@@ -9,6 +9,7 @@ meta:
 
 hooks:
   install: hooks/install.sh
+  uninstall: hooks/uninstall.sh
 
 variables:
   workdir:
