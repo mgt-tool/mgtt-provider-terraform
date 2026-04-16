@@ -1,0 +1,46 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+      - name: go vet
+        run: go vet ./...
+      - name: gofmt
+        run: |
+          diff=$(gofmt -s -d .)
+          if [ -n "$diff" ]; then
+            echo "$diff"
+            echo "::error::gofmt found issues"
+            exit 1
+          fi
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+      - name: go build
+        run: go build ./...
+      - name: install hook (verifies ldflags + go-version gate end-to-end)
+        run: bash hooks/install.sh
+
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+      - name: unit tests
+        run: go test -race -count=1 ./...

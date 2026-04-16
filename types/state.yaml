@@ -1,0 +1,56 @@
+facts:
+  accessible:
+    type: mgtt.bool
+    ttl: 30s
+    description: "true when `terraform state list` succeeds (backend reachable, auth valid)"
+    probe:
+      cmd: "cd {workdir} && {tf_bin} state list >/dev/null 2>&1 && echo true || echo false"
+      parse: bool
+      cost: low
+  locked:
+    type: mgtt.bool
+    ttl: 30s
+    description: "true when the state backend rejects a lock acquisition (another apply in progress)"
+    probe:
+      cmd: "cd {workdir} && {tf_bin} plan -lock-timeout=0s -refresh=false -detailed-exitcode 2>&1 | grep -q 'state lock' && echo true || echo false"
+      parse: bool
+      cost: medium
+  resource_count:
+    type: mgtt.int
+    ttl: 60s
+    description: total resources tracked in the state
+    probe:
+      cmd: "cd {workdir} && {tf_bin} state list | wc -l"
+      parse: int
+      cost: low
+  terraform_version:
+    type: mgtt.string
+    ttl: 300s
+    description: terraform version that last wrote this state
+    probe:
+      cmd: "cd {workdir} && {tf_bin} show -json | head -c 4096"
+      parse: "json:.terraform_version"
+      cost: medium
+
+healthy:
+  - accessible == true
+  - locked == false
+
+states:
+  backend_unreachable:
+    when: "accessible == false"
+    description: state backend is not reachable (auth, network, or backend outage)
+  locked:
+    when: "locked == true"
+    description: state is locked by another terraform operation
+  live:
+    when: "accessible == true"
+    description: state is readable and unlocked
+
+default_active_state: live
+
+failure_modes:
+  backend_unreachable:
+    can_cause: [deployment_blocked, reconciliation_blocked]
+  locked:
+    can_cause: [deployment_blocked]
