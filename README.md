@@ -79,28 +79,44 @@ meta:
   version: "1.2"
   providers: [terraform, kubernetes, aws]
   vars:
-    namespace: production
     tf_workdir: ./infrastructure
 
 components:
+  # IaC layer — "does Terraform think this exists, and does it match reality?"
+  # Prefix `tf_` makes it unambiguous that this component is observed via
+  # the terraform provider (type: terraform.*), not via AWS.
   tf_state:
     type: terraform.state
     vars: {workdir: "{tf_workdir}"}
 
-  rds_main:
+  tf_rds:
     type: terraform.resource
-    vars: {workdir: "{tf_workdir}", address: aws_db_instance.main}
+    vars:
+      workdir: "{tf_workdir}"
+      # `address` is the Terraform *resource address* — the `<type>.<name>`
+      # identifier Terraform itself uses. It's what `terraform state list`
+      # prints, and matches the HCL declaration:
+      #
+      #     resource "aws_db_instance" "main" { ... }
+      #       → terraform state list: aws_db_instance.main
+      #
+      # For resources inside a module: `module.infra.aws_db_instance.main`.
+      address: aws_db_instance.main
     depends_on: [tf_state]
 
-  rds_live:
+  # Live infra layer — same real-world RDS instance as tf_rds above,
+  # observed via the aws provider. Prefix `aws_` makes the observation
+  # boundary explicit so it's never ambiguous which provider reports
+  # which fact.
+  aws_rds:
     type: aws.rds_instance
     vars: {identifier: payments-prod}
-    depends_on: [rds_main]     # ← if TF doesn't know about it, observing live is moot
+    depends_on: [tf_rds]   # ← if TF doesn't know about it, observing live is moot
 
   api:
     type: kubernetes.deployment
     vars: {name: payments-api}
-    depends_on: [rds_live]
+    depends_on: [aws_rds]
 
   ingress:
     type: kubernetes.ingress
@@ -109,7 +125,7 @@ components:
     depends_on: [api]
 ```
 
-The engine walks left-to-right: ingress → api → rds_live → rds_main → tf_state. Each layer adds information the layer to its right cannot produce on its own.
+The engine walks the dependency chain upstream from the entry point: ingress → api → aws_rds → tf_rds → tf_state. Each layer adds information the next cannot produce on its own. The component *name* is just a label in the graph — the `type:` field tells you which provider does the observing, and the `tf_*` / `aws_*` prefix convention keeps the two views of the same real-world resource from blurring together.
 
 ## Architecture
 
