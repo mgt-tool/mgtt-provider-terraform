@@ -12,8 +12,13 @@ meta:
 # bind mounts and env forwards; git installs inherit them from the
 # operator's shell. `network:` is a separate runtime-isolation knob.
 # See mgtt docs/reference/image-capabilities.md for the vocabulary.
-needs: [terraform, aws]
+needs: [terraform]
 network: host
+# Add the state-backend credential capability as an operator concern:
+# needs: [terraform, aws]      # S3-backed state
+# needs: [terraform, gcloud]   # GCS-backed state
+# needs: [terraform, azure]    # Azure Storage-backed state
+# Local and Terraform Cloud backends need no additional cap.
 hooks:
   install: hooks/install.sh
   uninstall: hooks/uninstall.sh
