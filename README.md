@@ -41,11 +41,19 @@ The two components (`tf_rds` and `aws_rds`) describe the *same real-world databa
 
 ## Install
 
+Two equivalent paths — pick whichever fits your workflow:
+
 ```bash
+# Git + host toolchain (requires Go 1.25+; warns if terraform not on PATH)
 mgtt provider install terraform
+
+# Pre-built Docker image (ships terraform inside; digest-pinned)
+mgtt provider install --image ghcr.io/mgt-tool/mgtt-provider-terraform:0.1.0@sha256:...
 ```
 
-Install hook gates on Go 1.21+ and warns if `terraform` is not yet on PATH at install time (it's needed at probe time, not build time).
+The image is published by [this repo's CI](./.github/workflows/docker.yml) on every push to `main` and every `v*` tag. Find the current digest on the [GHCR package page](https://github.com/mgt-tool/mgtt-provider-terraform/pkgs/container/mgtt-provider-terraform).
+
+Runtime: the image declares `image.needs: [terraform, aws, network]` in `provider.yaml`; at probe time mgtt mounts `$PWD` as `/workspace` (your `.terraform/` dir comes along), forwards every `TF_VAR_*` and `TF_CLI_CONFIG_FILE` from the caller, mounts `~/.aws` read-only, forwards the `AWS_*` env chain, and adds `--network host` so remote state backends are reachable. Add `gcloud` or `azure` to `image.needs` for those backends. See [Image Capabilities](https://github.com/mgt-tool/mgtt/blob/main/docs/reference/image-capabilities.md) for the full contract.
 
 ## Auth
 
