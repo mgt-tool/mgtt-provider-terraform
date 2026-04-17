@@ -7,6 +7,13 @@ meta:
     mgtt: ">=0.1.2"
   command: "$MGTT_PROVIDER_DIR/bin/mgtt-provider-terraform"
 
+# Capabilities the image-installed form of this provider needs mgtt to
+# forward at probe time. Surfaced here (at the top, before types and
+# vocabulary) so anyone reading this file sees the runtime scope first.
+# See mgtt docs/reference/image-capabilities.md for the full vocabulary.
+image:
+  needs: [terraform, aws, network]
+
 hooks:
   install: hooks/install.sh
   uninstall: hooks/uninstall.sh
@@ -37,8 +44,3 @@ auth:
     # need strict read-only should bind a credential that cannot write to
     # the state backend and avoid the `drifted` fact.
     writes: state-refresh-on-plan
-
-# Capabilities the image-installed form of this provider needs mgtt to
-# forward at probe time. See mgtt docs/reference/image-capabilities.md.
-image:
-  needs: [terraform, aws, network]
