@@ -77,7 +77,7 @@ This provider uses your existing terraform auth chain (`TF_VAR_*`, backend-speci
 - Bind a credential that cannot write to the state backend, AND
 - Omit the `drifted` fact from their model.
 
-The provider's `auth.access.writes: state-refresh-on-plan` declares this explicitly so operators aren't surprised. **Expect `mgtt provider validate terraform` to emit one yellow WARN line** about the non-`none` writes declaration — that's intentional, it's asking you to confirm the credentials match this scope.
+The provider's `provider.yaml` declares `read_only: false` with a `writes_note:` describing this behavior. `mgtt provider install` prints the note at install time, and **`mgtt provider validate terraform` emits one yellow WARN line** about the non-read-only posture — intentional, it's asking you to confirm the credentials match the declared write scope.
 
 ## Timeouts
 
