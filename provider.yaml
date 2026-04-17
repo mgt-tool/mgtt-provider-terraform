@@ -7,12 +7,11 @@ meta:
     mgtt: ">=0.1.2"
   command: "$MGTT_PROVIDER_DIR/bin/mgtt-provider-terraform"
 
-# Capabilities the image-installed form of this provider needs mgtt to
-# forward at probe time. Surfaced here (at the top, before types and
-# vocabulary) so anyone reading this file sees the runtime scope first.
-# See mgtt docs/reference/image-capabilities.md for the full vocabulary.
-image:
-  needs: [terraform, aws, network]
+# Capabilities the provider needs at probe time. Image installs
+# satisfy these via docker-run bind mounts and env forwards; git
+# installs inherit them from the operator's shell.
+# See mgtt docs/reference/image-capabilities.md for the vocabulary.
+needs: [terraform, aws, network]
 
 hooks:
   install: hooks/install.sh

@@ -55,7 +55,7 @@ The image is published by [this repo's CI](./.github/workflows/docker.yml) on ev
 
 ## Capabilities
 
-When installed as an image, this provider declares the following runtime capabilities in [`provider.yaml`](./provider.yaml) (`image.needs`):
+When installed as an image, this provider declares the following runtime capabilities in [`provider.yaml`](./provider.yaml) (top-level `needs:`):
 
 | Capability | Effect at probe time |
 |---|---|
@@ -63,7 +63,7 @@ When installed as an image, this provider declares the following runtime capabil
 | `aws` | Mounts `~/.aws` read-only; forwards `AWS_PROFILE`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`, `AWS_REGION`, `AWS_DEFAULT_REGION` (when set) — covers the AWS state backend and `aws` provider resources |
 | `network` | `--network host` — container reaches remote state backends (S3, GCS, Azure Storage, Terraform Cloud) and the cloud provider APIs |
 
-If your state backend is GCP or Azure, add `gcloud` or `azure` to `image.needs` in this provider's `provider.yaml`; those caps forward `~/.config/gcloud` / `~/.azure` and the matching env chain.
+If your state backend is GCP or Azure, add `gcloud` or `azure` to `needs` in this provider's `provider.yaml`; those caps forward `~/.config/gcloud` / `~/.azure` and the matching env chain.
 
 Operators can override or extend the vocabulary via `$MGTT_HOME/capabilities.yaml`, and refuse specific caps via `MGTT_IMAGE_CAPS_DENY=...`. See the [full capabilities reference](https://github.com/mgt-tool/mgtt/blob/main/docs/reference/image-capabilities.md). Git-installed invocations don't go through this layer — the binary runs with the operator's full environment.
 
