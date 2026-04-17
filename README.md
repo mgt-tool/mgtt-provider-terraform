@@ -55,7 +55,7 @@ The image is published by [this repo's CI](./.github/workflows/docker.yml) on ev
 
 ## Capabilities
 
-When installed as an image, this provider declares the following runtime capabilities in [`provider.yaml`](./provider.yaml) (top-level `needs:`):
+When installed as an image, this provider declares the following runtime capabilities in [`manifest.yaml`](./manifest.yaml) (top-level `needs:`):
 
 | Capability | Effect at probe time |
 |---|---|
@@ -63,7 +63,7 @@ When installed as an image, this provider declares the following runtime capabil
 
 Plus `network: host` so the container reaches remote state backends (S3, GCS, Azure Storage, Terraform Cloud).
 
-The provider does **not** declare state-backend credential capabilities by default — Terraform works against multiple cloud backends, and a default `aws` forward would over-grant on GCP/Azure setups. Add the cap that matches your backend in `$MGTT_HOME/capabilities.yaml` (or in an operator-maintained fork of `provider.yaml`):
+The provider does **not** declare state-backend credential capabilities by default — Terraform works against multiple cloud backends, and a default `aws` forward would over-grant on GCP/Azure setups. Add the cap that matches your backend in `$MGTT_HOME/capabilities.yaml` (or in an operator-maintained fork of `manifest.yaml`):
 
 | Backend | Add to `needs:` |
 |---|---|
@@ -84,7 +84,7 @@ This provider uses your existing terraform auth chain (`TF_VAR_*`, backend-speci
 - Bind a credential that cannot write to the state backend, AND
 - Omit the `drifted` fact from their model.
 
-The provider's `provider.yaml` declares `read_only: false` with a `writes_note:` describing this behavior. `mgtt provider install` prints the note at install time, and **`mgtt provider validate terraform` emits one yellow WARN line** about the non-read-only posture — intentional, it's asking you to confirm the credentials match the declared write scope.
+The provider's `manifest.yaml` declares `read_only: false` with a `writes_note:` describing this behavior. `mgtt provider install` prints the note at install time, and **`mgtt provider validate terraform` emits one yellow WARN line** about the non-read-only posture — intentional, it's asking you to confirm the credentials match the declared write scope.
 
 ## Timeouts
 
