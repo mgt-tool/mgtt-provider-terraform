@@ -31,16 +31,10 @@ variables:
     required: false
     default: terraform
 
-auth:
-  strategy: environment
-  reads_from:
-    - TF_VAR_* env vars
-    - backend-specific credentials (AWS_*, GOOGLE_*, ARM_*, etc.)
-    - .terraform/ directory (provider plugins, locked module versions)
-  access:
-    probes: terraform read + plan
-    # Honest: `terraform plan` (the drift probe) refreshes state, which
-    # writes to the state file. Other facts are pure reads. Operators who
-    # need strict read-only should bind a credential that cannot write to
-    # the state backend and avoid the `drifted` fact.
-    writes: state-refresh-on-plan
+
+read_only: false
+writes_note: |
+  The `drifted` fact runs `terraform plan` which refreshes state —
+  a write to the state backend (state file). Other facts are pure
+  reads. Operators who need strict read-only should bind a credential
+  that cannot write to the state backend and omit the `drifted` fact.
