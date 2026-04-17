@@ -59,14 +59,21 @@ When installed as an image, this provider declares the following runtime capabil
 
 | Capability | Effect at probe time |
 |---|---|
-| `terraform` | Mounts `$PWD` at `/workspace` and `-w /workspace` (the `.terraform/` plugin cache and state ride along); forwards `TF_CLI_CONFIG_FILE` and every `TF_VAR_*` set in the caller |
-| `aws` | Mounts `~/.aws` read-only; forwards `AWS_PROFILE`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`, `AWS_REGION`, `AWS_DEFAULT_REGION` (when set) — covers the AWS state backend and `aws` provider resources |
+| `terraform` | Mounts `$PWD` at `/workspace` with `-w /workspace` (your `.terraform/` cache and state ride along); forwards `TF_CLI_CONFIG_FILE` and every `TF_VAR_*` set in the caller |
 
-Plus `network: host` so the container reaches remote state backends (S3, GCS, Azure Storage, Terraform Cloud) and the cloud provider APIs.
+Plus `network: host` so the container reaches remote state backends (S3, GCS, Azure Storage, Terraform Cloud).
 
-If your state backend is GCP or Azure, add `gcloud` or `azure` to `needs` in this provider's `provider.yaml`; those caps forward `~/.config/gcloud` / `~/.azure` and the matching env chain.
+The provider does **not** declare state-backend credential capabilities by default — Terraform works against multiple cloud backends, and a default `aws` forward would over-grant on GCP/Azure setups. Add the cap that matches your backend in `$MGTT_HOME/capabilities.yaml` (or in an operator-maintained fork of `provider.yaml`):
 
-See the [capability reference](https://github.com/mgt-tool/mgtt/blob/main/docs/reference/image-capabilities.md) for operator overrides and the `MGTT_IMAGE_CAPS_DENY` opt-out.
+| Backend | Add to `needs:` |
+|---|---|
+| S3 | `aws` |
+| GCS | `gcloud` |
+| Azure Storage | `azure` |
+| Terraform Cloud | — (token flows through `TF_CLI_CONFIG_FILE`) |
+| local | — |
+
+See the [capability reference](https://github.com/mgt-tool/mgtt/blob/main/docs/reference/image-capabilities.md).
 
 ## Auth
 
