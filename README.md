@@ -53,7 +53,19 @@ mgtt provider install --image ghcr.io/mgt-tool/mgtt-provider-terraform:0.1.0@sha
 
 The image is published by [this repo's CI](./.github/workflows/docker.yml) on every push to `main` and every `v*` tag. Find the current digest on the [GHCR package page](https://github.com/mgt-tool/mgtt-provider-terraform/pkgs/container/mgtt-provider-terraform).
 
-Runtime: the image declares `image.needs: [terraform, aws, network]` in `provider.yaml`; at probe time mgtt mounts `$PWD` as `/workspace` (your `.terraform/` dir comes along), forwards every `TF_VAR_*` and `TF_CLI_CONFIG_FILE` from the caller, mounts `~/.aws` read-only, forwards the `AWS_*` env chain, and adds `--network host` so remote state backends are reachable. Add `gcloud` or `azure` to `image.needs` for those backends. See [Image Capabilities](https://github.com/mgt-tool/mgtt/blob/main/docs/reference/image-capabilities.md) for the full contract.
+## Capabilities
+
+When installed as an image, this provider declares the following runtime capabilities in [`provider.yaml`](./provider.yaml) (`image.needs`):
+
+| Capability | Effect at probe time |
+|---|---|
+| `terraform` | Mounts `$PWD` at `/workspace` and `-w /workspace` (the `.terraform/` plugin cache and state ride along); forwards `TF_CLI_CONFIG_FILE` and every `TF_VAR_*` set in the caller |
+| `aws` | Mounts `~/.aws` read-only; forwards `AWS_PROFILE`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`, `AWS_REGION`, `AWS_DEFAULT_REGION` (when set) — covers the AWS state backend and `aws` provider resources |
+| `network` | `--network host` — container reaches remote state backends (S3, GCS, Azure Storage, Terraform Cloud) and the cloud provider APIs |
+
+If your state backend is GCP or Azure, add `gcloud` or `azure` to `image.needs` in this provider's `provider.yaml`; those caps forward `~/.config/gcloud` / `~/.azure` and the matching env chain.
+
+Operators can override or extend the vocabulary via `$MGTT_HOME/capabilities.yaml`, and refuse specific caps via `MGTT_IMAGE_CAPS_DENY=...`. See the [full capabilities reference](https://github.com/mgt-tool/mgtt/blob/main/docs/reference/image-capabilities.md). Git-installed invocations don't go through this layer — the binary runs with the operator's full environment.
 
 ## Auth
 
