@@ -61,7 +61,8 @@ When installed as an image, this provider declares the following runtime capabil
 |---|---|
 | `terraform` | Mounts `$PWD` at `/workspace` and `-w /workspace` (the `.terraform/` plugin cache and state ride along); forwards `TF_CLI_CONFIG_FILE` and every `TF_VAR_*` set in the caller |
 | `aws` | Mounts `~/.aws` read-only; forwards `AWS_PROFILE`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`, `AWS_REGION`, `AWS_DEFAULT_REGION` (when set) — covers the AWS state backend and `aws` provider resources |
-| `network` | `--network host` — container reaches remote state backends (S3, GCS, Azure Storage, Terraform Cloud) and the cloud provider APIs |
+
+Plus `network: host` so the container reaches remote state backends (S3, GCS, Azure Storage, Terraform Cloud) and the cloud provider APIs.
 
 If your state backend is GCP or Azure, add `gcloud` or `azure` to `needs` in this provider's `provider.yaml`; those caps forward `~/.config/gcloud` / `~/.azure` and the matching env chain.
 
