@@ -11,7 +11,7 @@ package integration
 // confirm the binary entrypoint implements the probe protocol.
 //
 // Scope: proves the provider image correctly declares its needs/network
-// (via the extracted /provider.yaml), that mgtt reads those declarations
+// (via the extracted /manifest.yaml), that mgtt reads those declarations
 // during install, and that the image is a valid probe-protocol binary.
 // It does NOT run real probes — those need a backend and live in other
 // integration tests in this repo.
@@ -34,7 +34,7 @@ import (
 	"time"
 )
 
-// Provider-specific fixtures. Update these alongside provider.yaml.
+// Provider-specific fixtures. Update these alongside manifest.yaml.
 const (
 	imgLocalTag    = "mgtt-provider-terraform-it:test"
 	providerName   = "terraform"

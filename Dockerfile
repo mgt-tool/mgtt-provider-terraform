@@ -26,6 +26,6 @@ RUN apk add --no-cache ca-certificates curl unzip \
  && apk del unzip \
  && terraform version
 COPY --from=build /out/provider /usr/local/bin/provider
-COPY provider.yaml /provider.yaml
+COPY manifest.yaml /manifest.yaml
 COPY types /types
 ENTRYPOINT ["/usr/local/bin/provider"]
