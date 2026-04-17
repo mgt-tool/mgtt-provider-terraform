@@ -1,6 +1,6 @@
 meta:
   name: terraform
-  version: 0.1.0
+  version: 0.1.1
   description: Terraform-managed infrastructure — state health, resource presence, drift detection, config-vs-reality reasoning
   tags: [iac, terraform, hashicorp]
   requires:
