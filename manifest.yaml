@@ -1,27 +1,32 @@
 meta:
   name: terraform
-  version: 0.1.1
+  version: 1.0.0
   description: Terraform-managed infrastructure — state health, resource presence, drift detection, config-vs-reality reasoning
   tags: [iac, terraform, hashicorp]
   requires:
-    mgtt: ">=0.1.2"
-  command: "$MGTT_PROVIDER_DIR/bin/mgtt-provider-terraform"
+    mgtt: ">=0.2.0"
 
 # Capabilities the provider needs at probe time — host packages
 # and credential chains. Image installs satisfy these via docker-run
 # bind mounts and env forwards; git installs inherit them from the
-# operator's shell. `network:` is a separate runtime-isolation knob.
+# operator's shell. `network_mode:` is a separate runtime-isolation knob.
 # See mgtt docs/reference/image-capabilities.md for the vocabulary.
-needs: [terraform]
-network: host
+#
 # Add the state-backend credential capability as an operator concern:
 # needs: [terraform, aws]      # S3-backed state
 # needs: [terraform, gcloud]   # GCS-backed state
 # needs: [terraform, azure]    # Azure Storage-backed state
 # Local and Terraform Cloud backends need no additional cap.
-hooks:
-  install: hooks/install.sh
-  uninstall: hooks/uninstall.sh
+runtime:
+  needs: [terraform]
+  network_mode: host
+
+install:
+  source:
+    build: hooks/install.sh
+    clean: hooks/uninstall.sh
+  image:
+    repository: ghcr.io/mgt-tool/mgtt-provider-terraform
 
 variables:
   workdir:
