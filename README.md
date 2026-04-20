@@ -172,3 +172,9 @@ go build .                    # compile locally
 go test -race ./...           # unit tests
 mgtt provider validate terraform     # static correctness
 ```
+
+## License
+
+[Apache License 2.0](LICENSE). Matches the license of the [mgtt provider SDK](https://github.com/mgt-tool/mgtt/tree/main/sdk/provider) this provider links against; pick-up by downstream packagers and distributors should be friction-free.
+
+Note that the [mgtt core engine](https://github.com/mgt-tool/mgtt) is licensed separately under AGPL-3.0 — that copyleft applies to the engine itself, not to providers that consume the SDK.
