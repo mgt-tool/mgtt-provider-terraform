@@ -1,10 +1,10 @@
 # Asks first-time contributors to sign CLA.md, and records the signature in
 # this repository on the `cla-signatures` branch.
 #
-# Needs a repo secret `PERSONAL_ACCESS_TOKEN` (a classic PAT with `repo`
-# scope) so the action can write the signature file. Until that secret
-# exists the job fails on external pull requests — which blocks unsigned
-# contributions, the intended behaviour.
+# No secret to configure. The action needs a Personal Access Token only when
+# signatures live in a *remote* repository; these are stored in this one, so
+# the built-in GITHUB_TOKEN suffices — with the write permissions granted
+# below.
 name: CLA
 
 on:
@@ -26,7 +26,6 @@ jobs:
       - uses: contributor-assistant/github-action@v2.6.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         with:
           path-to-document: https://github.com/${{ github.repository }}/blob/main/CLA.md
           path-to-signatures: signatures/version1/cla.json
