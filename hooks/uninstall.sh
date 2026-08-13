@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright (C) 2026 Alex Kunich
+# SPDX-License-Identifier: Apache-2.0
 set -euo pipefail
 
 # Runs from inside the installed provider dir ($MGTT_PROVIDER_DIR) before

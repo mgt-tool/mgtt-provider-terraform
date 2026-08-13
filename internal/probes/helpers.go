@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Alex Kunich
+// SPDX-License-Identifier: Apache-2.0
+
 // Package probes implements the terraform-provider probe surface. All
 // plumbing (argv parsing, status translation, exit codes) lives in the SDK;
 // this package only constructs terraform argv and parses output.

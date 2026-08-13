@@ -1,0 +1,7 @@
+# Canonical identity for every commit in this repository.
+# git log, git shortlog and git blame read this; GitHub does not.
+Alex Kunich <alex.kunich@gmail.com> <alex.kunich@gmail.com>
+Alex Kunich <alex.kunich@gmail.com> <sajonaro@users.noreply.github.com>
+Alex Kunich <alex.kunich@gmail.com> sajonaro <alex.kunich@gmail.com>
+Alex Kunich <alex.kunich@gmail.com> sajonaro <sajonaro@users.noreply.github.com>
+Alex Kunich <alex.kunich@gmail.com> Claude Code <alex.kunich@gmail.com>

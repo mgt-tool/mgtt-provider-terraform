@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Alex Kunich
+// SPDX-License-Identifier: Apache-2.0
+
 // Command mgtt-provider-terraform is a Terraform provider runner binary for
 // mgtt. All plumbing (argv parsing, JSON output, exit codes, timeouts,
 // status:not_found translation) lives in the mgtt SDK at
