@@ -13,11 +13,11 @@ import (
 	"github.com/mgt-tool/mgtt/sdk/provider"
 )
 
-func registerState(r *provider.Registry) {
+func stateFacts() map[string]provider.ProbeFn {
 	// state is a singleton-per-workdir resource; req.Name is conventional
 	// (e.g. "main", "infra") but ignored by the probes — the workdir is
 	// the real identity.
-	r.Register("state", map[string]provider.ProbeFn{
+	return map[string]provider.ProbeFn{
 		"accessible": func(ctx context.Context, req provider.Request) (provider.Result, error) {
 			tf, err := newFromReq(req)
 			if err != nil {
@@ -91,5 +91,5 @@ func registerState(r *provider.Registry) {
 			}
 			return provider.StringResult(meta.TerraformVersion), nil
 		},
-	})
+	}
 }

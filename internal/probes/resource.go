@@ -11,8 +11,8 @@ import (
 	"github.com/mgt-tool/mgtt/sdk/provider"
 )
 
-func registerResource(r *provider.Registry) {
-	r.Register("resource", map[string]provider.ProbeFn{
+func resourceFacts() map[string]provider.ProbeFn {
+	return map[string]provider.ProbeFn{
 		"exists_in_state": func(ctx context.Context, req provider.Request) (provider.Result, error) {
 			addr, err := resolveAddress(req)
 			if err != nil {
@@ -88,7 +88,7 @@ func registerResource(r *provider.Registry) {
 			}
 			return provider.IntResult(count), nil
 		},
-	})
+	}
 }
 
 // resolveAddress pulls the TF address from Extra["address"]. Returns
