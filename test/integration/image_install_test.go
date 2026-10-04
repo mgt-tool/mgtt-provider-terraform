@@ -39,13 +39,13 @@ import (
 
 // Provider-specific fixtures. Update these alongside manifest.yaml.
 const (
-	imgLocalTag    = "mgtt-provider-terraform-it:test"
-	providerName   = "terraform"
-	expectCaps     = "terraform, aws"
-	expectNetwork  = "host"
-	registryPort   = "15803"
-	registryName   = "mgtt-provider-terraform-it-registry"
-	localPushTag   = "localhost:15803/mgtt-provider-terraform:it"
+	imgLocalTag   = "mgtt-provider-terraform-it:test"
+	providerName  = "terraform"
+	expectCaps    = "terraform, aws"
+	expectNetwork = "host"
+	registryPort  = "15803"
+	registryName  = "mgtt-provider-terraform-it-registry"
+	localPushTag  = "localhost:15803/mgtt-provider-terraform:it"
 )
 
 func TestImageInstall_Capabilities(t *testing.T) {
