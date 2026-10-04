@@ -255,22 +255,21 @@ func TestResolveBinary_DefaultsToTerraform(t *testing.T) {
 func TestRegistry_WiresBothTypes(t *testing.T) {
 	r := provider.NewRegistry()
 	Register(r)
-	types := r.Types()
 	has := map[string]bool{}
-	for _, t := range types {
-		has[t] = true
+	for name := range types() {
+		has[name] = true
 	}
 	if !has["state"] || !has["resource"] {
-		t.Fatalf("want both state+resource registered, got %v", types)
+		t.Fatalf("want both state+resource registered, got %v", has)
 	}
 	// Sanity: each exposes the facts listed in the types/*.yaml vocabulary.
 	for _, f := range []string{"accessible", "locked", "resource_count", "terraform_version"} {
-		if !contains(r.Facts("state"), f) {
+		if !contains(factNames(types()["state"]), f) {
 			t.Errorf("state missing fact %q", f)
 		}
 	}
 	for _, f := range []string{"exists_in_state", "drifted", "last_applied_age", "dependents_count"} {
-		if !contains(r.Facts("resource"), f) {
+		if !contains(factNames(types()["resource"]), f) {
 			t.Errorf("resource missing fact %q", f)
 		}
 	}
@@ -283,4 +282,13 @@ func contains(xs []string, target string) bool {
 		}
 	}
 	return false
+}
+
+// factNames lists the facts a type registers, from the provider's own table.
+func factNames(facts map[string]provider.ProbeFn) []string {
+	out := make([]string, 0, len(facts))
+	for name := range facts {
+		out = append(out, name)
+	}
+	return out
 }

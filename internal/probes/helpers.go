@@ -156,10 +156,21 @@ func newFromReq(req provider.Request) (*TF, error) {
 	return NewTFConstructor(workdir, ResolveWorkspace(req), ResolveBinary(req)), nil
 }
 
+// types is this provider's vocabulary as it registers it: type name to the
+// probe for each fact. The SDK registry does not list what it holds (mgtt
+// 0.3.0 removed Registry.Types and Facts), so tests read the table here.
+func types() map[string]map[string]provider.ProbeFn {
+	return map[string]map[string]provider.ProbeFn{
+		"resource": resourceFacts(),
+		"state":    stateFacts(),
+	}
+}
+
 // Register adds the terraform provider's types to the registry.
 func Register(r *provider.Registry) {
-	registerState(r)
-	registerResource(r)
+	for name, facts := range types() {
+		r.Register(name, facts)
+	}
 }
 
 // Unused-symbol suppression handled by actual references above.
